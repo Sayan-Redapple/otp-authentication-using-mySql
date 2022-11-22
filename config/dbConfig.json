@@ -1,0 +1,38 @@
+{
+    "dev": {
+      "username": "root",
+      "password": "",
+      "database": "project_auth",
+      "host"    : "localhost",
+      "port"    : "3306",
+      "dialect" : "mysql",
+      "dialectOptions": {
+          "charset": "utf8mb4_unicode_ci"
+      },
+      "datetime":"yyyy-MM-dd HH:mm:ss"
+    },
+    "stg": {
+      "username": "",
+      "password": "",
+      "database": "",
+      "host": "",
+      "port":"",
+      "dialect": "",
+      "dialectOptions": {
+        "charset": "utf8mb4_unicode_ci"
+    },
+      "datetime":"yyyy-MM-dd HH:mm:ss"
+    },
+    "prd": {
+      "username": "",
+      "password": "",
+      "database": "",
+      "host": "",
+      "port":"",
+      "dialect": "mysql",
+      "dialectOptions": {
+        "charset": "utf8mb4_unicode_ci"
+    },
+      "datetime":"yyyy-MM-dd HH:mm:ss"
+    }
+  }
