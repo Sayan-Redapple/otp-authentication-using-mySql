@@ -2,17 +2,14 @@
 const passwordLib = require("../libs/passwordLib");
 const response = require("../libs/responseLib");
 const tokenLib = require("../libs/tokenLib");
-const jwt = require('jsonwebtoken');
-
+const jwt = require("jsonwebtoken");
 
 //------------------------------------------------------------To Register the new user-------------------------------------------------------------------------//
-
 
 let register = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
 
   try {
-    
     //-----------------------------------------------Checking whether any field is missing or not--------------------------------------------------------------//
 
     if (
@@ -36,14 +33,13 @@ let register = async (req, res) => {
     if (checkExist.length > 0) {
       res.status(200).send("Email ID already exist");
     } else {
-     
-     //----------------------------------------------------------Creating a Encrypted Password ----------------------------------------------------------------//
-     
-     const hash = await passwordLib.hash(req.body.password);
+      //----------------------------------------------------------Creating a Encrypted Password ----------------------------------------------------------------//
+
+      const hash = await passwordLib.hash(req.body.password);
 
       //-------------------------------------------------------Inserting all the Data in Database--------------------------------------------------------------//
-      
-     let createUser = await dataAPI.query(
+
+      let createUser = await dataAPI.query(
         `INSERT INTO tbl_user_register (user_name, full_name, email_id, mobile_no, password) VALUES ( "${req.body.user_name}","${req.body.full_name}", "${req.body.email_id}", "${req.body.mobile_no}", "${hash}")`
       );
 
@@ -63,7 +59,6 @@ let login = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
 
   try {
-
     //--------------------------------------------To check whether the email already in Database or not--------------------------------------------------------//
 
     if (!req.body.email_id) {
@@ -113,7 +108,7 @@ let getOTP = async (req, res) => {
       let fetchOTP = generateOTP();
 
       //---------------------------------------------------------INSERT OTP in TABLE---------------------------------------------------------------------------//
-      
+
       let createUser = await dataAPI.query(
         `INSERT INTO  tbl_otp_details (email_id, otp_generated, expire_at) VALUES ("${req.body.email_id}", "${fetchOTP}", NOW() + INTERVAL 2 MINUTE)`
       );
@@ -174,19 +169,25 @@ extractOTP = async (req, res) => {
       );
       // console.log(selectOTP);
       if (selectOTP[0].otp_generated == req.body.otp_generated) {
-        getData = await dataAPI.query(
-          `SELECT* FROM tbl_user_register WHERE full_name = "${req.body.full_name}" AND mobile_no = "${req.body.mobile_no}" AND user_name = "${req.body.user_name}" `,
-          { type: dataAPI.QueryTypes.SELECT }
-        );
-
-        //-----------------------------------------------------Creating WEBTOKEN-----------------------------------------------------------------------------//  
+        //-----------------------------------------------------Creating WEBTOKEN-----------------------------------------------------------------------------//
 
         const token = await tokenLib.generateToken(req.body.email_id);
-        
-        return res.status(200).send({
-          ...getData,
+        const email = await tokenLib.verifyClaimWithoutSecret(token);
+
+        let insertData = await dataAPI.query(
+          `INSERT INTO tbl_user_login_details(email_id, token_generated) VALUES ("${req.body.email_id}", "${token}")`
+        );
+
+      // let extractData = await dataAPI.query(`SELECT * 
+      // FROM  tbl_user_register
+      // WHERE email_id = "${req,body.email_id}"`, { type: dataAPI.QueryTypes.SELECT })
+
+
+      
+      return res.status(200).send({
           msg: "Logged in!",
           token: token,
+        //  ...email,
         });
       } else {
         return res.status(401).send({
