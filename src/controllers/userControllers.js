@@ -2,6 +2,7 @@
 const passwordLib = require("../libs/passwordLib");
 const response = require("../libs/responseLib");
 const tokenLib = require("../libs/tokenLib");
+const jwt = require('jsonwebtoken');
 
 
 //------------------------------------------------------------To Register the new user-------------------------------------------------------------------------//
