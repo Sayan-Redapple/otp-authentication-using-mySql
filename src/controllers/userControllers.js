@@ -1,18 +1,18 @@
 // const { verify } = require("../libs/passwordLib");
 const passwordLib = require("../libs/passwordLib");
 const response = require("../libs/responseLib");
-// const generateOTP = require("../libs/otpLib");
-const jwt = require("jsonwebtoken");
 const tokenLib = require("../libs/tokenLib");
 
 
-//To register the new user 
+//------------------------------------------------------------To Register the new user-------------------------------------------------------------------------//
+
+
 let register = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
 
   try {
     
-    //checking whether any feild is missing or not
+    //-----------------------------------------------Checking whether any field is missing or not--------------------------------------------------------------//
 
     if (
       !req.body.user_name ||
@@ -24,7 +24,7 @@ let register = async (req, res) => {
       res.status(412).send("There are some Information missing");
     }
 
-    //to check whether the email already in database or not
+    //--------------------------------------------To check whether the email already in database or not--------------------------------------------------------//
 
     let checkExist = await dataAPI.query(
       `SELECT* FROM tbl_user_register WHERE email_id = "${req.body.email_id}"`,
@@ -36,11 +36,11 @@ let register = async (req, res) => {
       res.status(200).send("Email ID already exist");
     } else {
      
-     //creating a encrypted password 
+     //----------------------------------------------------------Creating a Encrypted Password ----------------------------------------------------------------//
      
      const hash = await passwordLib.hash(req.body.password);
 
-      //inserting all the data in database
+      //-------------------------------------------------------Inserting all the Data in Database--------------------------------------------------------------//
       
      let createUser = await dataAPI.query(
         `INSERT INTO tbl_user_register (user_name, full_name, email_id, mobile_no, password) VALUES ( "${req.body.user_name}","${req.body.full_name}", "${req.body.email_id}", "${req.body.mobile_no}", "${hash}")`
@@ -56,12 +56,15 @@ let register = async (req, res) => {
   }
 };
 
-// login using email id to check whether the account is active or not
+//-------------------------------------------Login using Email id to check whether the Account is Active or not------------------------------------------------//
 
 let login = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
 
   try {
+
+    //--------------------------------------------To check whether the email already in Database or not--------------------------------------------------------//
+
     if (!req.body.email_id) {
       res.status(412).send("There are some information missing");
     }
@@ -81,7 +84,7 @@ let login = async (req, res) => {
   }
 };
 
-//generating random 6-digit otp using for loop
+//---------------------------------------------------Generating random 6-digit OTP using (for) loop------------------------------------------------------------//
 
 function generateOTP() {
   let digits = "0123456789";
@@ -92,7 +95,7 @@ function generateOTP() {
   return OTP;
 }
 
-//reciving the generated 6-digit otp  
+//---------------------------------------------------------Reciving the generated 6-digit OTP------------------------------------------------------------------//
 
 let getOTP = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
@@ -108,7 +111,8 @@ let getOTP = async (req, res) => {
     if (checkExist.length > 0) {
       let fetchOTP = generateOTP();
 
-      // INSERT OTP in TABLE
+      //---------------------------------------------------------INSERT OTP in TABLE---------------------------------------------------------------------------//
+      
       let createUser = await dataAPI.query(
         `INSERT INTO  tbl_otp_details (email_id, otp_generated, expire_at) VALUES ("${req.body.email_id}", "${fetchOTP}", NOW() + INTERVAL 2 MINUTE)`
       );
@@ -142,7 +146,7 @@ let getOTP = async (req, res) => {
   }
 };
 
-//verifying the otp and generating web token
+//---------------------------------------------------Verifying the OTP and Generating Web Token----------------------------------------------------------------//
 
 extractOTP = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
@@ -173,6 +177,9 @@ extractOTP = async (req, res) => {
           `SELECT* FROM tbl_user_register WHERE full_name = "${req.body.full_name}" AND mobile_no = "${req.body.mobile_no}" AND user_name = "${req.body.user_name}" `,
           { type: dataAPI.QueryTypes.SELECT }
         );
+
+        //-----------------------------------------------------Creating WEBTOKEN-----------------------------------------------------------------------------//  
+
         const token = await tokenLib.generateToken(req.body.email_id);
         
         return res.status(200).send({
