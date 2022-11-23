@@ -5,10 +5,15 @@ const response = require("../libs/responseLib");
 const jwt = require("jsonwebtoken");
 const tokenLib = require("../libs/tokenLib");
 
+
+//To register the new user 
 let register = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
 
   try {
+    
+    //checking whether any feild is missing or not
+
     if (
       !req.body.user_name ||
       !req.body.full_name ||
@@ -19,6 +24,8 @@ let register = async (req, res) => {
       res.status(412).send("There are some Information missing");
     }
 
+    //to check whether the email already in database or not
+
     let checkExist = await dataAPI.query(
       `SELECT* FROM tbl_user_register WHERE email_id = "${req.body.email_id}"`,
       { type: dataAPI.QueryTypes.SELECT }
@@ -28,9 +35,14 @@ let register = async (req, res) => {
     if (checkExist.length > 0) {
       res.status(200).send("Email ID already exist");
     } else {
-      const hash = await passwordLib.hash(req.body.password);
+     
+     //creating a encrypted password 
+     
+     const hash = await passwordLib.hash(req.body.password);
 
-      let createUser = await dataAPI.query(
+      //inserting all the data in database
+      
+     let createUser = await dataAPI.query(
         `INSERT INTO tbl_user_register (user_name, full_name, email_id, mobile_no, password) VALUES ( "${req.body.user_name}","${req.body.full_name}", "${req.body.email_id}", "${req.body.mobile_no}", "${hash}")`
       );
 
@@ -43,6 +55,8 @@ let register = async (req, res) => {
     res.status(412).send(apiResponse);
   }
 };
+
+// login using email id to check whether the account is active or not
 
 let login = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
@@ -67,6 +81,8 @@ let login = async (req, res) => {
   }
 };
 
+//generating random 6-digit otp using for loop
+
 function generateOTP() {
   let digits = "0123456789";
   let OTP = "";
@@ -75,6 +91,8 @@ function generateOTP() {
   }
   return OTP;
 }
+
+//reciving the generated 6-digit otp  
 
 let getOTP = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
@@ -123,6 +141,8 @@ let getOTP = async (req, res) => {
     res.status(412).send(apiResponse);
   }
 };
+
+//verifying the otp and generating web token
 
 extractOTP = async (req, res) => {
   let { dataAPI } = require("../../www/database/db");
